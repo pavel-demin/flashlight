@@ -27,7 +27,7 @@ START
     movlw b'00000101'
     movwf TRISA
 
-    movlw d'224'
+    movlw d'100'
     movwf I
 LOOPI
     movwf J
