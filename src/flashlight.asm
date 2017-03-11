@@ -10,17 +10,41 @@
     J
     ADCFVR
     ADCAN2
+    FLAGS
     ENDC
 
-RES_VECT CODE 0x00
+    CBLOCK 0x70
+    TEMP_STATUS
+    TEMP_W
+    ENDC
+
+RESET_VECTOR CODE 0x0000
     goto START
+
+INT_VECTOR CODE 0x0004
+    movwf TEMP_W
+    swapf STATUS,W
+    movwf TEMP_STATUS
+
+    btfsc INTCON,2
+    bsf FLAGS,0
+    bcf INTCON,2
+
+    swapf TEMP_STATUS,W
+    movwf STATUS
+    swapf TEMP_W,F
+    swapf TEMP_W,W
+    RETFIE
 
 MAIN_PROG CODE
 
 START
+    clrf INTCON
     clrf LATA
     movlw b'00000100'
     movwf ANSELA
+    movlw b'10000111'
+    movwf OPTION_REG
 
     movlw b'11111111'
     movwf PR2
@@ -91,13 +115,22 @@ MODE2
 MODE3
     clrf MODE
     bsf TRISA,1
-    goto LOOP
+    goto TIMER
 
 PWM
     movlw b'00000100'
     movwf T2CON
 
+TIMER
+    clrf FLAGS
+    bsf INTCON,5
+    bsf INTCON,7
+
 LOOP
+    btfss FLAGS,0
+    goto LOOP
+    bcf FLAGS,0
+
     movlw b'01011101'
     movwf ADCON
     movlw d'10'
@@ -127,15 +160,15 @@ DELAY4
     movwf ADCAN2
 
     bcf STATUS,C
-    rrf ADCFVR,W
-    movwf ADCFVR
+    rrf ADCFVR,F
+    movf ADCFVR,W
     subwf ADCAN2,F
     btfss STATUS,C
     goto STOP
 
     bcf STATUS,C
-    rrf ADCFVR,W
-    movwf ADCFVR
+    rrf ADCFVR,F
+    movf ADCFVR,W
     subwf ADCAN2,F
     btfss STATUS,C
     goto STOP
