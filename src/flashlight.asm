@@ -3,46 +3,48 @@
     __CONFIG _FOSC_INTOSC & _BOREN_OFF & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _LVP_ON & _LPBOR_OFF & _BORV_LO & _WRT_OFF
 
 GPR_VARS UDATA 0x40
-KEY0 RES 1
-KEY1 RES 1
+TEST RES 1
 MODE RES 1
+FLAGS RES 1
 I RES 1
-J RES 1
 ADCFVR RES 1
 ADCAN2 RES 1
-FLAGS RES 1
 
 INT_VARS UDATA 0x70
-TEMP_STATUS RES 1
-TEMP_W RES 1
+TMP_STATUS RES 1
+TMP_W RES 1
 
 RES_VECT CODE 0x0000
     goto START
 
 INT_VECT CODE 0x0004
-    movwf TEMP_W
+    movwf TMP_W
     swapf STATUS,W
-    movwf TEMP_STATUS
+    movwf TMP_STATUS
 
-    btfsc INTCON,2
+    btfss INTCON,2
+    goto DONE
     bsf FLAGS,0
     bcf INTCON,2
-
-    swapf TEMP_STATUS,W
+DONE
+    swapf TMP_STATUS,W
     movwf STATUS
-    swapf TEMP_W,F
-    swapf TEMP_W,W
+    swapf TMP_W,F
+    swapf TMP_W,W
     retfie
 
 MAIN_PROG CODE
 
 START
-    clrf INTCON
     clrf LATA
     movlw b'00000100'
     movwf ANSELA
+
+    clrf FLAGS
     movlw b'10000111'
     movwf OPTION_REG
+    movlw b'10100000'
+    movwf INTCON
 
     movlw b'11111111'
     movwf PR2
@@ -57,35 +59,16 @@ START
     movlw b'10000001'
     movwf FVRCON
 
-    movlw d'100'
-    movwf I
-LOOPI
-    movwf J
-LOOPJ
-    decfsz J,F
-    goto LOOPJ
-    decfsz I,F
-    goto LOOPI
+DEBOUNCE
+    btfss FLAGS,0
+    goto DEBOUNCE
+    bcf FLAGS,0
 
-TEST
-    movlw b'10100101'
-    subwf KEY0,W
+    movlw b'10101010'
+    subwf TEST,F
     btfss STATUS,Z
-    goto INIT
-
-    movlw b'01011010'
-    subwf KEY1,W
-    btfss STATUS,Z
-    goto INIT
-
-    goto SWITCH
-
-INIT
-    movlw b'10100101'
-    movwf KEY0
-    movlw b'01011010'
-    movwf KEY1
     clrf MODE
+    movwf TEST
 
 SWITCH
     incf MODE,F
@@ -113,16 +96,11 @@ MODE2
 MODE3
     clrf MODE
     bsf TRISA,1
-    goto TIMER
+    goto LOOP
 
 PWM
     movlw b'00000100'
     movwf T2CON
-
-TIMER
-    clrf FLAGS
-    bsf INTCON,5
-    bsf INTCON,7
 
 LOOP
     btfss FLAGS,0
@@ -131,7 +109,7 @@ LOOP
 
     movlw b'01011101'
     movwf ADCON
-    movlw d'10'
+    movlw d'3'
     movwf I
 DELAY1
     decfsz I,F
@@ -145,7 +123,7 @@ DELAY2
 
     movlw b'01001001'
     movwf ADCON
-    movlw d'10'
+    movlw d'3'
     movwf I
 DELAY3
     decfsz I,F
