@@ -29,7 +29,7 @@ START
     clrf TMR2
     movlw b'11000000'
     movwf PWM2CON
-    movlw b'00000101'
+    movlw b'00001101'
     movwf TRISA
 
     movlw b'10000001'
