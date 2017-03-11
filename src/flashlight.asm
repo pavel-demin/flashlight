@@ -70,33 +70,29 @@ DEBOUNCE
     clrf MODE
     movwf TEST
 
-SWITCH
-    incf MODE,F
-    movf MODE,W
-    xorlw 1
-    bz MODE1
-    xorlw 2^1
-    bz MODE2
-    xorlw 3^2
-    bz MODE3
+    bsf STATUS,C
+    rlf MODE,F
 
-MODE1
-    movlw b'01000000'
-    movwf PWM2DCL
-    clrf PWM2DCH
-    goto PWM
+MODE3
+    btfss MODE,2
+    goto MODE2
+    clrf MODE
+    bsf TRISA,1
+    goto LOOP
 
 MODE2
+    btfss MODE,1
+    goto MODE1
     movlw b'11000000'
     movwf PWM2DCL
     movlw b'00000011'
     movwf PWM2DCH
     goto PWM
 
-MODE3
-    clrf MODE
-    bsf TRISA,1
-    goto LOOP
+MODE1
+    movlw b'01000000'
+    movwf PWM2DCL
+    clrf PWM2DCH
 
 PWM
     movlw b'00000100'
