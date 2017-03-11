@@ -2,20 +2,25 @@
 
     __CONFIG _FOSC_INTOSC & _BOREN_OFF & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _LVP_ON & _LPBOR_OFF & _BORV_LO & _WRT_OFF
 
-KEY0 EQU h'40'
-KEY1 EQU h'41'
-MODE EQU h'42'
-I    EQU h'43'
-J    EQU h'44'
+    CBLOCK 0x40
+    KEY0
+    KEY1
+    MODE
+    I
+    J
+    ADCFVR
+    ADCAN2
+    ENDC
 
-RES_VECT CODE 0x0000
-    GOTO START
+RES_VECT CODE 0x00
+    goto START
 
 MAIN_PROG CODE
 
 START
     clrf LATA
-    clrf ANSELA
+    movlw b'00000100'
+    movwf ANSELA
 
     movlw b'11111111'
     movwf PR2
@@ -26,6 +31,9 @@ START
     movwf PWM2CON
     movlw b'00000101'
     movwf TRISA
+
+    movlw b'10000001'
+    movwf FVRCON
 
     movlw d'100'
     movwf I
@@ -38,12 +46,12 @@ LOOPJ
     goto LOOPI
 
 TEST
-    movlw h'AB'
+    movlw b'10100101'
     subwf KEY0,W
     btfss STATUS,Z
     goto INIT
 
-    movlw h'CD'
+    movlw b'01011010'
     subwf KEY1,W
     btfss STATUS,Z
     goto INIT
@@ -51,9 +59,9 @@ TEST
     goto SWITCH
 
 INIT
-    movlw h'AB'
+    movlw b'10100101'
     movwf KEY0
-    movlw h'CD'
+    movlw b'01011010'
     movwf KEY1
     clrf MODE
 
@@ -90,6 +98,55 @@ PWM
     movwf T2CON
 
 LOOP
-    GOTO LOOP
+    movlw b'01011101'
+    movwf ADCON
+    movlw d'10'
+    movwf I
+DELAY1
+    decfsz I,F
+    goto DELAY1
+    bsf ADCON,GO_NOT_DONE
+DELAY2
+    btfsc ADCON,GO_NOT_DONE
+    goto DELAY2
+    movf ADRES,W
+    movwf ADCFVR
+
+    movlw b'01001001'
+    movwf ADCON
+    movlw d'10'
+    movwf I
+DELAY3
+    decfsz I,F
+    goto DELAY3
+    bsf ADCON,GO_NOT_DONE
+DELAY4
+    btfsc ADCON,GO_NOT_DONE
+    goto DELAY4
+    movf ADRES,W
+    movwf ADCAN2
+
+    bcf STATUS,C
+    rrf ADCFVR,W
+    movwf ADCFVR
+    subwf ADCAN2,F
+    btfss STATUS,C
+    goto STOP
+
+    bcf STATUS,C
+    rrf ADCFVR,W
+    movwf ADCFVR
+    subwf ADCAN2,F
+    btfss STATUS,C
+    goto STOP
+
+    goto LOOP
+
+STOP
+    clrf T2CON
+    clrf PWM2CON
+    bcf TRISA,1
+    bcf PORTA,1
+    sleep
 
     END
