@@ -5,33 +5,11 @@
 GPR_VARS UDATA 0x40
 TEST RES 1
 MODE RES 1
-FLAGS RES 1
-I RES 1
 ADCFVR RES 1
 ADCAN2 RES 1
 
-INT_VARS UDATA 0x70
-TMP_STATUS RES 1
-TMP_W RES 1
-
 RES_VECT CODE 0x0000
     goto START
-
-INT_VECT CODE 0x0004
-    movwf TMP_W
-    swapf STATUS,W
-    movwf TMP_STATUS
-
-    btfss INTCON,2
-    goto DONE
-    bsf FLAGS,0
-    bcf INTCON,2
-DONE
-    swapf TMP_STATUS,W
-    movwf STATUS
-    swapf TMP_W,F
-    swapf TMP_W,W
-    retfie
 
 MAIN_PROG CODE
 
@@ -40,11 +18,13 @@ START
     movlw b'00000100'
     movwf ANSELA
 
-    clrf FLAGS
-    movlw b'10000111'
+    ; 1 MHz clock
+    movlw b'00110000'
+    movwf OSCCON
+
+    ; 1:32 prescaler
+    movlw b'10000100'
     movwf OPTION_REG
-    movlw b'10100000'
-    movwf INTCON
 
     movlw b'11111111'
     movwf PR2
@@ -60,9 +40,9 @@ START
     movwf FVRCON
 
 DEBOUNCE
-    btfss FLAGS,0
+    btfss INTCON,2
     goto DEBOUNCE
-    bcf FLAGS,0
+    bcf INTCON,2
 
     movlw b'10101010'
     subwf TEST,F
@@ -99,55 +79,40 @@ PWM
     movwf T2CON
 
 LOOP
-    btfss FLAGS,0
+    btfss INTCON,2
     goto LOOP
-    bcf FLAGS,0
+    bcf INTCON,2
 
-    movlw b'01011101'
+    movlw b'10011101'
     movwf ADCON
-    movlw d'3'
-    movwf I
-DELAY1
-    decfsz I,F
-    goto DELAY1
-    bsf ADCON,GO_NOT_DONE
-DELAY2
-    btfsc ADCON,GO_NOT_DONE
-    goto DELAY2
-    movf ADRES,W
+    call MEASUREMENT
     movwf ADCFVR
 
-    movlw b'01001001'
+    movlw b'10001001'
     movwf ADCON
-    movlw d'3'
-    movwf I
-DELAY3
-    decfsz I,F
-    goto DELAY3
-    bsf ADCON,GO_NOT_DONE
-DELAY4
-    btfsc ADCON,GO_NOT_DONE
-    goto DELAY4
-    movf ADRES,W
+    call MEASUREMENT
     movwf ADCAN2
 
-    bcf STATUS,C
-    rrf ADCFVR,F
-    movf ADCFVR,W
-    subwf ADCAN2,F
-    btfss STATUS,C
-    goto STOP
-
-    bcf STATUS,C
-    rrf ADCFVR,F
-    movf ADCFVR,W
-    subwf ADCAN2,F
-    btfss STATUS,C
-    goto STOP
+    call COMPARISON
+    call COMPARISON
 
     goto LOOP
 
-STOP
+MEASUREMENT
+    bsf ADCON,GO_NOT_DONE
+CONVERSION
+    btfsc ADCON,GO_NOT_DONE
+    goto CONVERSION
+    movf ADRES,W
+    return
+
+COMPARISON
+    bcf STATUS,C
+    rrf ADCFVR,F
+    movf ADCFVR,W
+    subwf ADCAN2,F
+    btfsc STATUS,C
+    return
     clrf T2CON
     clrf PWM2CON
     bcf TRISA,1
