@@ -1,6 +1,6 @@
 #include "p10F322.inc"
 
-    __CONFIG _FOSC_INTOSC & _BOREN_OFF & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _LVP_ON & _LPBOR_OFF & _BORV_LO & _WRT_OFF
+    __CONFIG _FOSC_INTOSC & _BOREN_OFF & _WDTE_SWDTEN & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _LVP_ON & _LPBOR_OFF & _BORV_LO & _WRT_OFF
 
 GPR_VARS UDATA 0x40
 TEST RES 1
@@ -15,34 +15,26 @@ MAIN_PROG CODE
 
 START
     clrf LATA
-    movlw b'00000100'
-    movwf ANSELA
+    clrf PORTA
+    clrf TRISA
+    clrf ANSELA
+    bsf ANSELA,2
 
-    ; 1 MHz clock
-    movlw b'00110000'
+    ; 500 kHz clock
+    movlw b'00100000'
     movwf OSCCON
 
-    ; 1:32 prescaler
-    movlw b'10000100'
-    movwf OPTION_REG
+    ; 1 V FVR
+    bsf FVRCON,FVREN
+    bsf FVRCON,ADFVR0
 
-    movlw b'11111111'
-    movwf PR2
-    clrf PWM2DCL
-    clrf PWM2DCH
-    clrf TMR2
-    movlw b'11000000'
-    movwf PWM2CON
+    ; enable ADC interrupt
+    bsf PIE1,ADIE
+
+    ; sleep 64 ms
     movlw b'00001101'
-    movwf TRISA
-
-    movlw b'10000001'
-    movwf FVRCON
-
-DEBOUNCE
-    btfss INTCON,TMR0IF
-    goto DEBOUNCE
-    bcf INTCON,TMR0IF
+    movwf WDTCON
+    sleep
 
     movlw b'10101010'
     subwf TEST,F
@@ -63,36 +55,57 @@ MODE3
 MODE2
     btfss MODE,1
     goto MODE1
-    movlw b'11000000'
-    movwf PWM2DCL
-    movlw b'00000011'
-    movwf PWM2DCH
-    goto PWM
+    movlw b'00111111'
+    movwf NCO1INCL
+    goto PFM
 
 MODE1
-    movlw b'01000000'
-    movwf PWM2DCL
-    clrf PWM2DCH
+    movlw b'00000111'
+    movwf NCO1INCL
 
-PWM
-    movlw b'00000100'
-    movwf T2CON
+PFM
+    ; connect NCO to gate 2
+    movlw b'01010000'
+    movwf CLC1SEL0
+    clrf CLC1SEL1
+    clrf CLC1GLS0
+    clrf CLC1GLS1
+    clrf CLC1GLS2
+    clrf CLC1GLS3
+    bsf CLC1GLS1,3
+    ; invert gate 1
+    clrf CLC1POL
+    bsf CLC1POL,0
+    ; enable CLC output
+    movlw b'11000000'
+    movwf CLC1CON
+
+    clrf NCO1INCH
+    clrf NCO1ACCU
+    ; 8 us pulse
+    movlw b'11100010'
+    movwf NCO1CLK
+    ; enable PFM
+    movlw b'10000001'
+    movwf NCO1CON
 
 LOOP
-    btfss INTCON,TMR0IF
-    goto LOOP
-    bcf INTCON,TMR0IF
+    ; sleep 64 ms
+    sleep
 
-    movlw b'10011101'
+    ; measure FVR
+    movlw b'11111101'
     movwf ADCON
     call MEASUREMENT
     movwf ADCFVR
 
-    movlw b'10001001'
+    ; measure AN2
+    movlw b'11101001'
     movwf ADCON
     call MEASUREMENT
     movwf ADCAN2
 
+    ; stop if AN2 is less than 0.75*FVR
     call COMPARISON
     call COMPARISON
 
@@ -100,9 +113,7 @@ LOOP
 
 MEASUREMENT
     bsf ADCON,GO_NOT_DONE
-CONVERSION
-    btfsc ADCON,GO_NOT_DONE
-    goto CONVERSION
+    sleep
     movf ADRES,W
     return
 
@@ -113,10 +124,14 @@ COMPARISON
     subwf ADCAN2,F
     btfsc STATUS,C
     return
-    clrf T2CON
-    clrf PWM2CON
-    bcf TRISA,1
-    bcf PORTA,1
+    clrf ADCON
+    bcf FVRCON,ADFVR0
+    bcf FVRCON,FVREN
+    clrf NCO1CON
+    clrf CLC1CON
+    clrf PORTA
+    clrf TRISA
+    bcf WDTCON,SWDTEN
     sleep
 
     END
