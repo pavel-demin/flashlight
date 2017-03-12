@@ -40,9 +40,9 @@ START
     movwf FVRCON
 
 DEBOUNCE
-    btfss INTCON,2
+    btfss INTCON,TMR0IF
     goto DEBOUNCE
-    bcf INTCON,2
+    bcf INTCON,TMR0IF
 
     movlw b'10101010'
     subwf TEST,F
@@ -79,9 +79,9 @@ PWM
     movwf T2CON
 
 LOOP
-    btfss INTCON,2
+    btfss INTCON,TMR0IF
     goto LOOP
-    bcf INTCON,2
+    bcf INTCON,TMR0IF
 
     movlw b'10011101'
     movwf ADCON
