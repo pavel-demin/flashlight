@@ -16,17 +16,12 @@ MAIN_PROG CODE
 START
     clrf LATA
     clrf PORTA
-    clrf TRISA
-    clrf ANSELA
-    bsf ANSELA,2
+    bcf TRISA,1
+    bcf ANSELA,1
 
     ; 500 kHz clock
     movlw b'00100000'
     movwf OSCCON
-
-    ; 1 V FVR
-    bsf FVRCON,FVREN
-    bsf FVRCON,ADFVR0
 
     ; enable ADC interrupt
     bsf PIE1,ADIE
@@ -50,6 +45,7 @@ MODE3
     goto MODE2
     clrf MODE
     bsf TRISA,1
+    bsf ANSELA,1
     goto LOOP
 
 MODE2
@@ -93,17 +89,25 @@ LOOP
     ; sleep 64 ms
     sleep
 
-    ; measure FVR
-    movlw b'11111101'
-    movwf ADCON
-    call MEASUREMENT
-    movwf ADCFVR
+    ; 1 V FVR
+    bsf FVRCON,FVREN
+    bsf FVRCON,ADFVR0
 
     ; measure AN2
     movlw b'11101001'
     movwf ADCON
     call MEASUREMENT
     movwf ADCAN2
+
+    ; measure FVR
+    movlw b'11111101'
+    movwf ADCON
+    call MEASUREMENT
+    movwf ADCFVR
+
+    clrf ADCON
+    bcf FVRCON,ADFVR0
+    bcf FVRCON,FVREN
 
     ; stop if AN2 is less than 0.75*FVR
     call COMPARISON
@@ -124,13 +128,10 @@ COMPARISON
     subwf ADCAN2,F
     btfsc STATUS,C
     return
-    clrf ADCON
-    bcf FVRCON,ADFVR0
-    bcf FVRCON,FVREN
     clrf NCO1CON
     clrf CLC1CON
-    clrf PORTA
-    clrf TRISA
+    bcf TRISA,1
+    bcf ANSELA,1
     bcf WDTCON,SWDTEN
     sleep
 
