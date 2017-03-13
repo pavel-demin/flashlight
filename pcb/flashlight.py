@@ -4,7 +4,7 @@ u1 = Part('parts', 'TPS61200', footprint = 'modules:DRC')
 u2 = Part('parts', 'PIC10F320', footprint = 'modules:MC')
 
 r1 = Part('parts', 'R', value = '2', footprint = 'modules:0805')
-r2 = Part('parts', 'R', value = '10k', footprint = 'modules:0805')
+r2 = Part('parts', 'R', value = '470k', footprint = 'modules:0805')
 
 c1 = Part('parts', 'C', value = '10u', footprint = 'modules:0805')
 c2 = Part('parts', 'C', value = '22u', footprint = 'modules:0805')
