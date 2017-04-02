@@ -61,9 +61,10 @@ MODE2
     goto PWM
 
 MODE1
-    movlw b'01000000'
+    movlw b'11000000'
     movwf PWM2DCL
-    clrf PWM2DCH
+    movlw b'00000111'
+    movwf PWM2DCH
 
 PWM
     ; start PWM
