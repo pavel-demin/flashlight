@@ -48,8 +48,7 @@ MODE3
     btfss MODE,2
     goto MODE2
     clrf MODE
-    bsf TRISA,1
-    bsf ANSELA,1
+    bsf PORTA,1
     goto LOOP
 
 MODE2
@@ -103,8 +102,7 @@ LOOP
     goto LOOP
     bcf T2CON,TMR2ON
     clrf PWM2CON
-    bcf ANSELA,1
-    bcf TRISA,1
+    bcf PORTA,1
     bsf VREGCON,VREGPM1
     sleep
 
