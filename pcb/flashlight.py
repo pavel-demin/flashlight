@@ -4,7 +4,7 @@ u1 = Part('parts', 'TPS61200', footprint = 'modules:DRC')
 u2 = Part('parts', 'PIC10F320', footprint = 'modules:MC')
 
 r1 = Part('parts', 'R', value = '2', footprint = 'modules:0805')
-r2 = Part('parts', 'R', value = '470k', footprint = 'modules:0805')
+r2 = Part('parts', 'R', value = '1M', footprint = 'modules:0805')
 
 c1 = Part('parts', 'C', value = '10u', footprint = 'modules:0805')
 c2 = Part('parts', 'C', value = '22u', footprint = 'modules:0805')
@@ -31,11 +31,11 @@ nets = 7 * Net()
 u1[:] += NC
 u2[:] += NC
 supply += c1[1], l1[1], u1[5, 6, 8], u2[3]
-gnd += c1[2], c2[2], c3[2], u1[4, 9, 11], r1[2], u2[7, 9]
+gnd += c1[2], c2[2], c3[2], u1[4, 9, 11], r1[2], r2[1], u2[7, 9]
 nets[0] += l1[2], u1[3]
 nets[1] += u1[2], c2[1], ledp[1]
 nets[2] += u1[1], c3[1], u2[2], r2[2], vdd[1]
-nets[3] += u1[7], r2[1], u2[4], clk[1]
+nets[3] += u1[7], u2[4], clk[1]
 nets[4] += u1[10], r1[1], ledn[1]
 nets[5] += u2[5], dat[1]
 nets[6] += u2[8], clr[1]
