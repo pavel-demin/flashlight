@@ -1,28 +1,30 @@
 from skidl import *
 
-u1 = Part('parts', 'TPS61200', footprint = 'modules:DRC')
-u2 = Part('parts', 'PIC10F320', footprint = 'modules:MC')
+parts = SchLib('parts', tool=SKIDL)
 
-r1 = Part('parts', 'R', value = '2', footprint = 'modules:0805')
-r2 = Part('parts', 'R', value = '1M', footprint = 'modules:0805')
+u1 = Part(parts, 'TPS61200', footprint = 'modules:DRC')
+u2 = Part(parts, 'PIC10F320', footprint = 'modules:MC')
 
-c1 = Part('parts', 'C', value = '10u', footprint = 'modules:0805')
-c2 = Part('parts', 'C', value = '22u', footprint = 'modules:0805')
-c3 = Part('parts', 'C', value = '1u', footprint = 'modules:0805')
+r1 = Part(parts, 'R', value = '2', footprint = 'modules:0805')
+r2 = Part(parts, 'R', value = '1M', footprint = 'modules:0805')
 
-l1 = Part('parts', 'L', value = '2.2u', footprint = 'modules:XFL4020')
+c1 = Part(parts, 'C', value = '10u', footprint = 'modules:0805')
+c2 = Part(parts, 'C', value = '22u', footprint = 'modules:0805')
+c3 = Part(parts, 'C', value = '1u', footprint = 'modules:0805')
 
-vdd = Part('parts', 'PAD', ref = 'VDD', value = 'VDD', footprint = 'modules:PAD-1.0mm')
-clk = Part('parts', 'PAD', ref = 'PCLK', value = 'PCLK', footprint = 'modules:PAD-1.0mm')
-dat = Part('parts', 'PAD', ref = 'PDAT', value = 'PDAT', footprint = 'modules:PAD-1.0mm')
-clr = Part('parts', 'PAD', ref = 'MCLR', value = 'MCLR', footprint = 'modules:PAD-1.0mm')
+l1 = Part(parts, 'L', value = '2.2u', footprint = 'modules:XFL4020')
 
-ledp = Part('parts', 'PAD', ref = '+', value = '+LED', footprint = 'modules:PAD-1.5mm')
-ledn = Part('parts', 'PAD', ref = '-', value = 'LED-', footprint = 'modules:PAD-1.5mm')
+vdd = Part(parts, 'PAD', ref = 'VDD', value = 'VDD', footprint = 'modules:PAD-1.0mm')
+clk = Part(parts, 'PAD', ref = 'PCLK', value = 'PCLK', footprint = 'modules:PAD-1.0mm')
+dat = Part(parts, 'PAD', ref = 'PDAT', value = 'PDAT', footprint = 'modules:PAD-1.0mm')
+clr = Part(parts, 'PAD', ref = 'MCLR', value = 'MCLR', footprint = 'modules:PAD-1.0mm')
 
-vias_supply = 3 * Part('parts', 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
-vias_gnd = 6 * Part('parts', 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
-pins_gnd = 2 * Part('parts', 'PIN', footprint = 'modules:PIN-1.0mm', dest = TEMPLATE)
+ledp = Part(parts, 'PAD', ref = '+', value = '+LED', footprint = 'modules:PAD-1.5mm')
+ledn = Part(parts, 'PAD', ref = '-', value = 'LED-', footprint = 'modules:PAD-1.5mm')
+
+vias_supply = 3 * Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
+vias_gnd = 6 * Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
+pins_gnd = 2 * Part(parts, 'PIN', footprint = 'modules:PIN-1.0mm', dest = TEMPLATE)
 
 supply = Net('SUPPLY')
 gnd = Net('GND')
