@@ -27,7 +27,9 @@ vias_gnd = 6 * Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLA
 pins_gnd = 2 * Part(parts, 'PIN', footprint = 'modules:PIN-1.0mm', dest = TEMPLATE)
 
 supply = Net('SUPPLY')
+supply.drive = POWER
 gnd = Net('GND')
+gnd.drive = POWER
 nets = 7 * Net()
 
 u1[:] += NC
@@ -45,5 +47,7 @@ nets[6] += u2[8], clr[1]
 for via in vias_supply: supply += via[1]
 for via in vias_gnd: gnd += via[1]
 for pin in pins_gnd: gnd += pin[1]
+
+ERC()
 
 generate_netlist()
