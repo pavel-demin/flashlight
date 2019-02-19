@@ -22,15 +22,15 @@ clr = Part(parts, 'PAD', ref = 'MCLR', value = 'MCLR', footprint = 'modules:PAD-
 ledp = Part(parts, 'PAD', ref = '+', value = '+LED', footprint = 'modules:PAD-1.5mm')
 ledn = Part(parts, 'PAD', ref = '-', value = 'LED-', footprint = 'modules:PAD-1.5mm')
 
-vias_supply = 3 * Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
-vias_gnd = 6 * Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm', dest = TEMPLATE)
-pins_gnd = 2 * Part(parts, 'PIN', footprint = 'modules:PIN-1.0mm', dest = TEMPLATE)
+vias_supply = [Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm') for i in range(3)]
+vias_gnd = [Part(parts, 'VIA', footprint = 'modules:VIA-0.6mm') for i in range(6)]
+pins_gnd = [Part(parts, 'PIN', footprint = 'modules:PIN-1.0mm') for i in range(2)]
 
 supply = Net('SUPPLY')
 supply.drive = POWER
 gnd = Net('GND')
 gnd.drive = POWER
-nets = 7 * Net()
+nets = [Net() for i in range(7)]
 
 u1[:] += NC
 u2[:] += NC
